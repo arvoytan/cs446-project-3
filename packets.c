@@ -57,11 +57,36 @@ int main(int argc, char *argv[]) {
 			/* Examples:
 			 * Print the first byte of the packet
 			 */
-      for(int i = 0; i<6; i++){
+      for(int i = 6; i<12; i++){
         printf("%02X",packet_data[i]);
-        printf( ":");
+        if(i<11)
+          printf( ":");
       }
       printf("->");
+      for(int i =0; i<6; i++){
+        printf("%02X",packet_data[i]);
+        if(i<5)
+          printf( ":");
+      }
+      printf("\n");
+      printf("\n");
+      printf("\n");
+      if(packet_data[16] == 8 && packet_data[17] == 0){
+        printf("   [IPv4] ");
+        for(int i = 30;i<34;i++){
+          printf("%d", packet_data[i]);
+          if(i < 33)
+            printf(".");
+        }
+       printf(" -> ");
+       for (int i = 34; i<38; i++){
+         printf("%d", packet_data[i]);
+         if(i< 37)
+           printf(".");
+       }
+       printf("\n");
+      }
+
       /*
 			 * Print the fifth byte of the packet
 			 * printf("%02X", packet_data[4]);
