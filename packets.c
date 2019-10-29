@@ -58,34 +58,60 @@ int main(int argc, char *argv[]) {
 			 * Print the first byte of the packet
 			 */
       for(int i = 6; i<12; i++){
-        printf("%02X",packet_data[i]);
+        printf("%01x",packet_data[i]);
         if(i<11)
           printf( ":");
       }
-      printf("->");
+      printf(" -> ");
       for(int i =0; i<6; i++){
-        printf("%02X",packet_data[i]);
+        printf("%01x",packet_data[i]);
         if(i<5)
           printf( ":");
       }
       printf("\n");
-      printf("\n");
-      printf("\n");
-      if(packet_data[16] == 8 && packet_data[17] == 0){
+      if(packet_data[12] == 8 && packet_data[13] == 0){
         printf("   [IPv4] ");
-        for(int i = 30;i<34;i++){
+        for(int i = 26;i<30;i++){
           printf("%d", packet_data[i]);
-          if(i < 33)
+          if(i < 29)
             printf(".");
         }
        printf(" -> ");
-       for (int i = 34; i<38; i++){
+       for (int i = 30; i<34; i++){
          printf("%d", packet_data[i]);
-         if(i< 37)
+         if(i< 33)
+           printf(".");
+       }
+       if(packet_data[22] == 6){
+         printf(" [TCP]");
+         int source  = packet_data[34] +packet_data[35];
+         int dest = packet_data[36] + packet_data[37];
+         printf("%x", source);
+         printf(" -> ");
+         printf("%x", dest);
+       }
+       else if(packet_data[22] == 17){
+         printf(" [UDP]");
+       }
+       printf("\n");
+      }
+      else if(packet_data[12] == 134 && packet_data[13] == 221){
+        printf("   [IPv6] ");
+        for(int i = 26;i<30;i++){
+          printf("%d", packet_data[i]);
+          if(i < 29)
+            printf(".");
+        }
+       printf(" -> ");
+       for (int i = 30; i<34; i++){
+         printf("%d", packet_data[i]);
+         if(i< 33)
            printf(".");
        }
        printf("\n");
       }
+      printf("\n");
+      printf("\n");
 
       /*
 			 * Print the fifth byte of the packet
