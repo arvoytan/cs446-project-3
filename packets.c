@@ -1,6 +1,10 @@
 #include <pcap/pcap.h>
 #include <stdlib.h>
-
+#include <sys/types.h>
+#include <string.h>
+//#include <sys/ethernet.h>
+#include <netinet/ether.h>
+#include <arpa/inet.h>
 /*
  * Most of this file is the background functionality to open a capture file or to
  * open an inteface for a live capture. You can ignore all this unless you are
@@ -47,16 +51,11 @@ int main(int argc, char *argv[]) {
 	ret = pcap_next_ex(pcap_handle, &packet_hdr, &packet_data);
 	while( ret != -2 ) {
 		if( valid_capture(ret, pcap_handle, use_file) ){
-
-			/*
-			 *
-			 * Put your code here
-			 *
-			 */
-
-			/* Examples:
-			 * Print the first byte of the packet
-			 */
+     /*
+      *
+      * this is the ehternet code working
+      *
+      */
       for(int i = 6; i<12; i++){
         printf("%01x",packet_data[i]);
         if(i<11)
@@ -69,6 +68,11 @@ int main(int argc, char *argv[]) {
           printf( ":");
       }
       printf("\n");
+      /* 
+       *
+       *this is the ipv4 code below
+       *
+       */
       if(packet_data[12] == 8 && packet_data[13] == 0){
         printf("   [IPv4] ");
         for(int i = 26;i<30;i++){
@@ -82,37 +86,46 @@ int main(int argc, char *argv[]) {
          if(i< 33)
            printf(".");
        }
-       if(packet_data[22] == 6){
-         printf(" [TCP]");
-         int source  = packet_data[34] +packet_data[35];
-         int dest = packet_data[36] + packet_data[37];
-         printf("%x", source);
+       printf("\n");
+       if(packet_data[23] == 6){
+         printf("   [TCP] ");
+         int source  = (packet_data[34]<<2) +packet_data[35];
+         int dest = (packet_data[36]<<2) + packet_data[37];
+         printf("%d", source);
          printf(" -> ");
-         printf("%x", dest);
+         printf("%d", dest);
        }
-       else if(packet_data[22] == 17){
-         printf(" [UDP]");
+       else if(packet_data[23] == 17){
+         printf("   [UDP] ");
+         int source  = (packet_data[34]<<2) +packet_data[35];
+         int dest = (packet_data[36]<<2) + packet_data[37];
+         printf("%d", source);
+         printf(" -> ");
+         printf("%d", dest);
        }
        printf("\n");
       }
+      /*
+       *
+       * ipv6 code
+       *
+       */
       else if(packet_data[12] == 134 && packet_data[13] == 221){
         printf("   [IPv6] ");
-        for(int i = 26;i<30;i++){
-          printf("%d", packet_data[i]);
-          if(i < 29)
-            printf(".");
-        }
-       printf(" -> ");
-       for (int i = 30; i<34; i++){
-         printf("%d", packet_data[i]);
-         if(i< 33)
-           printf(".");
-       }
-       printf("\n");
+        char ipv6_source[16];
+        char ipv6_hex_source[16];
+        char ipv6_dest[16];
+        char ipv6_hex_dest[16]; 
+        memcpy(ipv6_source, &packet_data[22], 16);
+        memcpy(ipv6_dest, &packet_data[38], 16);
+        inet_ntop(AF_INET6,ipv6_source,ipv6_hex_source, INET6_ADDRSTRLEN );
+        inet_ntop(AF_INET6,ipv6_dest,ipv6_hex_dest, INET6_ADDRSTRLEN );
+        printf("%s", ipv6_hex_source);
+        printf(" -> ");
+        printf("%s", ipv6_hex_dest);
+        printf("\n");
       }
       printf("\n");
-      printf("\n");
-
       /*
 			 * Print the fifth byte of the packet
 			 * printf("%02X", packet_data[4]);
