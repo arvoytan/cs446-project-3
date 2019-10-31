@@ -94,9 +94,9 @@ int main(int argc, char *argv[]) {
           printf("%d", source);
           printf(" -> ");
           printf("%d", dest);
-          if(packet_data[47] == 2)
+          if((packet_data[47]&2) == 2)
             printf(" SYN");
-          else if(packet_data[47] == 1)
+          else if((packet_data[47]&1) == 1)
             printf(" FIN");
         }
         else if(packet_data[23] == 17){
@@ -121,12 +121,12 @@ int main(int argc, char *argv[]) {
        */
       else if(packet_data[12] == 134 && packet_data[13] == 221){
         printf("   [IPv6] ");
-        char ipv6_source[16];
-        char ipv6_hex_source[16];
-        char ipv6_dest[16];
-        char ipv6_hex_dest[16]; 
-        memcpy(ipv6_source, &packet_data[22], 16);
-        memcpy(ipv6_dest, &packet_data[38], 16);
+        char ipv6_source[INET6_ADDRSTRLEN];
+        char ipv6_hex_source[INET6_ADDRSTRLEN];
+        char ipv6_dest[INET6_ADDRSTRLEN];
+        char ipv6_hex_dest[INET6_ADDRSTRLEN]; 
+        memcpy(ipv6_source, &packet_data[22], INET6_ADDRSTRLEN);
+        memcpy(ipv6_dest, &packet_data[38], INET6_ADDRSTRLEN);
         inet_ntop(AF_INET6,ipv6_source,ipv6_hex_source, INET6_ADDRSTRLEN );
         inet_ntop(AF_INET6,ipv6_dest,ipv6_hex_dest, INET6_ADDRSTRLEN );
         printf("%s", ipv6_hex_source);
@@ -153,19 +153,18 @@ int main(int argc, char *argv[]) {
           printf(" -> ");
           printf("%d", dest);
         }
-        /*else{
+        else{//not ipv6 udp or tcp
           printf("   [");
-          printf("%d", packet_data[23]);
+          printf("%d", packet_data[20]);
           printf("]");
-        }*/
+          }
         printf("\n");
       }
-      /*
-       * Print the fifth byte of the packet
-       * printf("%02X", packet_data[4]);
-       */
-    }
-    else{ //not ipv4 or ipv6
+      else{ //not ipv4 or ipv6
+        int value   = (packet_data[12]<<8)+ packet_data[13];
+        printf("    [%d]", value);
+        printf("\n");
+      }
     }
 
     /* Get the next packet */
